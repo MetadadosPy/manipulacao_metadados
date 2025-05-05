@@ -1,1 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentação - Sistema de Transcrição de Vídeo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        h1 {
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            border-left: 4px solid #3498db;
+            padding-left: 10px;
+            margin-top: 30px;
+        }
+        code {
+            background-color: #f0f0f0;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        pre {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .endpoint {
+            background-color: #e8f4fc;
+            border: 1px solid #3498db;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .method {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .get { background-color: #d4edda; color: #155724; }
+        .post { background-color: #cce5ff; color: #004085; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Documentação do Sistema de Transcrição de Vídeo</h1>
+    
+    <section id="overview">
+        <h2>Visão Geral</h2>
+        <p>
+            O sistema permite que usuários enviem arquivos de vídeo para processamento, onde o áudio é extraído
+            e transcrito automaticamente utilizando o modelo Whisper da OpenAI. O resultado é retornado em formato
+            de texto com marcações temporais para geração de legendas.
+        </p>
+    </section>
 
+    <section id="tech-stack">
+        <h2>Tecnologias Utilizadas</h2>
+        <ul>
+            <li><strong>FastAPI</strong>: Framework para construção da API</li>
+            <li><strong>Whisper</strong>: Modelo de transcrição de áudio</li>
+            <li><strong>FFmpeg</strong>: Processamento de vídeo/áudio</li>
+            <li><strong>Celery + Redis</strong>: Processamento assíncrono</li>
+            <li><strong>SQLAlchemy</strong>: Persistência de dados (opcional)</li>
+        </ul>
+    </section>
+
+    <section id="architecture">
+        <h2>Arquitetura do Sistema</h2>
+        <img src="architecture-diagram.png" alt="Diagrama de Arquitetura" style="max-width:100%; border:1px solid #ddd;">
+        <ol>
+            <li>Upload do vídeo via API</li>
+            <li>Armazenamento temporário do arquivo</li>
+            <li>Enfileiramento do processamento</li>
+            <li>Worker Celery processa o vídeo:
+                <ul>
+                    <li>Extrai áudio com FFmpeg</li>
+                    <li>Transcreve com Whisper</li>
+                    <li>Formata resultados</li>
+                </ul>
+            </li>
+            <li>Armazenamento dos resultados</li>
+            <li>Disponibilização para o cliente</li>
+        </ol>
+    </section>
+
+    <section id="endpoints">
+        <h2>Endpoints da API</h2>
+
+        <div class="endpoint">
+            <h3>Enviar Vídeo para Processamento</h3>
+            <p><span class="method post">POST</span> <code>/api/upload</code></p>
+            <p><strong>Descrição:</strong> Recebe um arquivo de vídeo e inicia o processamento.</p>
+            
+            <h4>Parâmetros:</h4>
+            <table>
+                <tr>
+                    <th>Parâmetro</th>
+                    <th>Tipo</th>
+                    <th>Obrigatório</th>
+                    <th>Descrição</th>
+                </tr>
+                <tr>
+                    <td>file</td>
+                    <td>binary</td>
+                    <td>Sim</td>
+                    <td>Arquivo de vídeo (MP4, AVI, MOV)</td>
+                </tr>
+                <tr>
+                    <td>model</td>
+                    <td>string</td>
+                    <td>Não</td>
+                    <td>Modelo Whisper (padrão: 'base')</td>
+                </tr>
+            </table>
+
+            <h4>Resposta de Sucesso:</h4>
+            <pre>{
+  "status": "processing",
+  "task_id": "550e8400-e29b-41d4-a716-446655440000",
+  "video_id": "123e4567-e89b-12d3-a456-426614174000"
+}</pre>
+        </div>
+
+        <div class="endpoint">
+            <h3>Consultar Resultado</h3>
+            <p><span class="method get">GET</span> <code>/api/result/{task_id}</code></p>
+            <p><strong>Descrição:</strong> Retorna o status e resultado do processamento.</p>
+            
+            <h4>Respostas Possíveis:</h4>
+            <pre>// Em processamento
+{
+  "status": "processing"
+}
+
+// Processamento concluído
+{
+  "status": "completed",
+  "result": {
+    "text": "Transcrição completa...",
+    "segments": [
+      {
+        "start": 0.0,
+        "end": 4.0,
+        "text": "Olá mundo"
+      }
+    ],
+    "srt_url": "/download/123e4567.srt"
+  }
+}
+
+// Erro
+{
+  "status": "error",
+  "detail": "Mensagem de erro"
+}</pre>
+        </div>
+    </section>
+
+    <section id="installation">
+        <h2>Instalação e Configuração</h2>
+        <h3>Pré-requisitos</h3>
+        <ul>
+            <li>Python 3.8+</li>
+            <li>FFmpeg instalado no sistema</li>
+            <li>Redis (para fila de tarefas)</li>
+        </ul>
+
+        <h3>Passos para Instalação</h3>
+        <pre># Clone o repositório
+git clone https://github.com/seu-usuario/video-transcriber.git
+cd video-transcriber
+
+# Crie um ambiente virtual
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate    # Windows
+
+# Instale as dependências
+pip install -r requirements.txt
+
+# Configure as variáveis de ambiente
+cp .env.example .env
+# Edite o .env com suas configurações</pre>
+
+        <h3>Execução</h3>
+        <pre># Inicie o Redis (em outro terminal)
+docker run -p 6379:6379 redis
+
+# Inicie o worker Celery (em outro terminal)
+celery -A tasks worker --loglevel=info
+
+# Inicie a aplicação FastAPI
+uvicorn main:app --reload</pre>
+    </section>
+
+    <section id="examples">
+        <h2>Exemplos de Uso</h2>
+        <h3>Enviando um vídeo via cURL</h3>
+        <pre>curl -X POST -F "file=@meuvideo.mp4" http://localhost:8000/api/upload</pre>
+
+        <h3>Consultando resultado</h3>
+        <pre>curl http://localhost:8000/api/result/550e8400-e29b-41d4-a716-446655440000</pre>
+
+        <h3>Integração com Python</h3>
+        <pre>import requests
+
+# Upload do vídeo
+response = requests.post(
+    "http://localhost:8000/api/upload",
+    files={"file": open("meuvideo.mp4", "rb")}
+)
+task_id = response.json()["task_id"]
+
+# Consulta do resultado
+while True:
+    result = requests.get(f"http://localhost:8000/api/result/{task_id}").json()
+    if result["status"] == "completed":
+        print(result["result"]["text"])
+        break
+    time.sleep(2)</pre>
+    </section>
+
+    <section id="limitations">
+        <h2>Limitações e Melhorias Futuras</h2>
+        <h3>Limitações Atuais</h3>
+        <ul>
+            <li>Tamanho máximo de vídeo: 500MB</li>
+            <li>Tempo de processamento pode ser longo para vídeos extensos</li>
+            <li>Suporte limitado a formatos de vídeo</li>
+        </ul>
+
+        <h3>Melhorias Planejadas</h3>
+        <ul>
+            <li>Adicionar autenticação de usuários</li>
+            <li>Implementar sistema de prioridades</li>
+            <li>Adicionar suporte a mais formatos de saída (VTT, TXT)</li>
+            <li>Integrar com serviço de tradução</li>
+        </ul>
+    </section>
+
+    <footer>
+        <p>Documentação atualizada em <span id="current-date"></span></p>
+    </footer>
+
+    <script>
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('pt-BR');
+    </script>
+</body>
+</html>
