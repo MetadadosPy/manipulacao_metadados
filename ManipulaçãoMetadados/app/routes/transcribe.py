@@ -43,8 +43,8 @@ async def transcribe_audio(file: UploadFile = File(...)):
 
         formatted_segments = [
             {
-                "start": format_time(segment['start']),
-                "end": format_time(segment['end']),
+                "start": float(segment['start']),
+                "end": float(segment['end']),
                 "text": segment['text'].strip()
             }
             for segment in result.get("segments", [])
@@ -58,10 +58,10 @@ async def transcribe_audio(file: UploadFile = File(...)):
         cursor = connection.cursor()
 
         query = """
-        INSERT INTO videos (
-            nome, dados, nome_arquivo, caminho_audio, 
-            texto, idioma, duracao
-        ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+            INSERT IGNORE INTO videos (
+                nome, dados, nome_arquivo, caminho_audio, 
+                texto, idioma, duracao
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s)
         """
 
         full_text = "\n".join([seg['text'] for seg in formatted_segments])
