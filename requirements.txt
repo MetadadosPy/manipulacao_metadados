@@ -1,6 +1,0 @@
-fastapi
-uvicorn[standard]
-whisper
-ffmpeg-python
-mysql-connector-python
-python-multipart
