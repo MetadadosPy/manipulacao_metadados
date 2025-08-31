@@ -1,3 +1,16 @@
+"""
+audio_processing.py
+-------------------
+Funções utilitárias para processamento de áudio e extração de áudio de vídeos.
+
+Este módulo oferece funções para identificar o formato de vídeos e extrair o áudio em formato mp3, utilizando ffmpeg e ffprobe.
+
+Boas práticas:
+- Docstrings de módulo e funções.
+- Organização clara dos métodos utilitários.
+- Tratamento de exceções detalhado.
+"""
+
 import ffmpeg
 import tempfile
 import subprocess
@@ -15,6 +28,18 @@ FORMATOS_SUPORTADOS = {"mp4", "mov", "mkv", "webm", "avi"}
 
 
 def get_format_from_video(video_path: str) -> str:
+    """
+    Identifica o formato do vídeo usando ffprobe.
+
+    Args:
+        video_path (str): Caminho para o arquivo de vídeo.
+
+    Returns:
+        str: Formato do vídeo (ex: 'mp4', 'mkv').
+
+    Raises:
+        Exception: Se não for possível identificar o formato.
+    """
     try:
         result = subprocess.run(
             [
@@ -46,6 +71,19 @@ def get_format_from_video(video_path: str) -> str:
 
 
 def extract_audio_from_video(video_path: str, audio_format: str = "mp3") -> str:
+    """
+    Extrai o áudio de um vídeo e salva em arquivo temporário mp3.
+
+    Args:
+        video_path (str): Caminho para o arquivo de vídeo.
+        audio_format (str): Formato de saída do áudio (padrão: 'mp3').
+
+    Returns:
+        str: Caminho para o arquivo de áudio extraído.
+
+    Raises:
+        Exception: Se o formato do vídeo não for suportado ou ocorrer erro na extração.
+    """
     video_format = get_format_from_video(video_path)
     print(f"Formato detectado: {video_format}")
 

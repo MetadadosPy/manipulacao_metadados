@@ -1,3 +1,13 @@
+"""
+database.py
+-----------
+Funções para conexão e manipulação do banco de dados MySQL.
+
+Boas práticas:
+- Docstrings de módulo e funções.
+- Tratamento de exceções para conexões.
+"""
+
 from fastapi import HTTPException
 import mysql.connector
 from mysql.connector import Error
