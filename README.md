@@ -1,4 +1,4 @@
-# ManipulaçãoMetadados-GPU 2.0
+# ManipulaçãoMetadados-CPU 2.0
 
 ## Descrição
 Backend para transcrição automática de vídeos e áudios utilizando o modelo Whisper, com armazenamento dos resultados em banco de dados MySQL. Inclui rotas CRUD para gerenciamento dos vídeos transcritos, facilitando integração com frontend para visualização, cadastro, atualização e exclusão dos registros.
@@ -22,45 +22,18 @@ Backend para transcrição automática de vídeos e áudios utilizando o modelo 
       - `videos.py` - Endpoints CRUD de vídeos
     - `main.py` - Inicialização da API
 
-
-## Como rodar o projeto com GPU
-
-### Requisitos
-- GPU NVIDIA compatível
-- Driver CUDA instalado
-- [PyTorch com suporte CUDA](https://pytorch.org/get-started/locally/) instalado
-- Whisper instalado
-
-### Passo a passo
-1. **Instale o PyTorch com suporte CUDA**
-  - Acesse https://pytorch.org/get-started/locally/ e copie o comando de instalação para sua versão de CUDA. Exemplo para CUDA 11.8:
-    ```bash
-    pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-    ```
-  - Certifique-se de que o comando instala a versão CUDA correta para sua placa.
-
-2. **Instale as demais dependências:**
-  ```bash
-  pip install -r requirements.txt
-  ```
-
-3. **Verifique se o PyTorch reconhece a GPU:**
-  - Execute no Python:
-    ```python
-    import torch
-    print(torch.cuda.is_available())  # Deve retornar True
-    ```
-
-4. **Configure o banco de dados:**
-  - Edite `app/config.py` com suas credenciais MySQL.
-  - Execute o script SQL para criar a tabela `videos`.
-
-5. **Execute o backend:**
-  ```bash
-  uvicorn app.main:app --reload
-  ```
-
-Se tudo estiver correto, o modelo Whisper será carregado e executado na GPU.
+## Instalação e Execução
+1. **Instale as dependências:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. **Configure o banco de dados:**
+   - Edite `app/config.py` com suas credenciais MySQL.
+   - Execute o script SQL para criar a tabela `videos`.
+3. **Execute o backend:**
+   ```bash
+   uvicorn app.main:app --reload
+   ```
 
 ## Endpoints da API
 ### Transcrição
