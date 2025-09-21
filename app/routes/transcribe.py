@@ -10,7 +10,7 @@ from datetime import datetime
 import json
 from app.crud import create_video, get_video_by_filename
 
-router = APIRouter() 
+router = APIRouter()
 
 @router.post("/transcribe/")
 async def transcribe_audio(file: UploadFile = File(...)):
@@ -51,24 +51,25 @@ async def transcribe_audio(file: UploadFile = File(...)):
         else:
             raise HTTPException(status_code=400, detail="Formato de arquivo não suportado.")
 
-        # Realiza transcrição com Whisper, sem especificar device
-        result = model.transcribe(temp_audio_path, language="pt")
+        # ----- INÍCIO DO NOVO BLOCO DE CÓDIGO MOCKADO -----
 
-        # Formata os segmentos da transcrição
-        formatted_segments = [
-            {
-                "start": float(segment['start']),
-                "end": float(segment['end']),
-                "text": segment['text'].strip()
-            }
-            for segment in result.get("segments", [])
+        # Simula um resultado falso do Whisper AI
+        mock_segments = [
+            {"start": 0.5, "end": 2.8, "text": "Olá, este é o primeiro segmento da nossa transcrição de teste."},
+            {"start": 3.0, "end": 5.5, "text": "Ela funciona de forma instantânea para agilizar o desenvolvimento."},
+            {"start": 5.8, "end": 8.2, "text": "Obrigado por utilizar o modo de desenvolvimento mockado."}
         ]
 
+        formatted_segments = mock_segments
         dados_json_str = json.dumps(formatted_segments, ensure_ascii=False)
-        duration = round(result['segments'][-1]['end'] if result.get('segments') else 0, 2)
+        duration = 8.2
         full_text = "\n".join([seg['text'] for seg in formatted_segments])
+        idioma = "pt"
+
+        # ----- FIM DO NOVO BLOCO DE CÓDIGO MOCKADO -----
 
         # Salva no banco usando função do CRUD
+        # Esta parte do código deve permanecer, utilizando as variáveis mockadas
         create_video(
             nome=os.path.splitext(file.filename)[0],
             dados=dados_json_str,
@@ -77,7 +78,7 @@ async def transcribe_audio(file: UploadFile = File(...)):
             caminho_txt=None,
             caminho_json=None,
             texto=full_text,
-            idioma=result.get("language", "unknown"),
+            idioma=idioma,
             duracao=duration
         )
 
